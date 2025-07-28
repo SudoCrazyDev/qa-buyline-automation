@@ -26,40 +26,59 @@ describe('Quotes Module Tests', () => {
       cy.contains('Quotes').click();
       cy.contains('Manage Buy Quotes').click();
       cy.wait(2000);
-      cy.get(':nth-child(1) > .form-control').type('13035636-00');
+      cy.intercept('GET', '/api/v1/quotes*').as('quoteFilterApi');
+      cy.get(':nth-child(1) > .form-control').type('13049707-00{enter}');
       cy.wait(2000);
+      cy.wait('@quoteFilterApi').then((interception) => {
+        expect(interception.response.statusCode).to.eq(200);
+        expect(interception.request.url).to.include('quote_number=13049707-00');
+      });
       cy.contains('Buy Quotes (1)').should('be.visible');
       cy.get(':nth-child(1) > .form-control').clear();
       cy.wait(2000);
+      cy.intercept('GET', '/api/v1/quotes*').as('quoteFiltercustomerApi');
       cy.get('table tbody tr').should('have.length.of.at.least', 1);
-      cy.intercept('GET', '/api/v1/quotes*').as('quoteFilterApi');
-      cy.get(':nth-child(1) > :nth-child(2) > :nth-child(2) > .form-control').type('GREAT LAKES PLUMBING & HEATING');
-      cy.wait('@quoteFilterApi').then((interception) => {
+      cy.get(':nth-child(1) > :nth-child(2) > :nth-child(2) > .form-control').type('GREAT LAKES PLUMBING & HEATING{enter}');
+      cy.wait('@quoteFiltercustomerApi').then((interception) => {
         expect(interception.response.statusCode).to.eq(200);
         expect(interception.request.url).to.include('customer_name=GREAT+LAKES+PLUMBING+%26+HEATING');
       });
+      cy.intercept('GET', '/api/v1/quotes*').as('QuoteFilterCustomerApiError');
       cy.get('table tbody tr').should('have.length.of.at.least', 10);
-      cy.get(':nth-child(1) > :nth-child(2) > :nth-child(2) > .form-control').type('ASDXASDXASXAXD');
-      cy.wait('@quoteFilterApi').then((interception) => {
+      cy.get(':nth-child(1) > :nth-child(2) > :nth-child(2) > .form-control').type('ASDXASDXASXAXD{enter}');
+      cy.wait('@QuoteFilterCustomerApiError').then((interception) => {
         expect(interception.response.statusCode).to.eq(404);
+        
       });
+      cy.intercept('GET', '/api/v1/quotes*').as('QuoteFilterApiError');
       cy.get(':nth-child(1) > :nth-child(2) > :nth-child(2) > .form-control').clear();
-      cy.wait('@quoteFilterApi').then((interception) => {
+      cy.wait('@QuoteFilterApiError').then((interception) => {
         expect(interception.response.statusCode).to.eq(200);
       });
       cy.get('.my-3 > :nth-child(1) > .form-select').select('In Progress');
-      cy.wait('@quoteFilterApi').then((interception) => {
+      cy.intercept('GET', '/api/v1/quotes*').as('StatusFilterAPI');
+      cy.wait('@StatusFilterAPI').then((interception) => {
         expect(interception.response.statusCode).to.eq(200);
       });
       cy.get('table tbody tr').should('have.length.of.at.least', 1);
+      cy.get('tbody > :nth-child(1) > :nth-child(10) > .d-flex > :nth-child(1)').click();
+      cy.wait(5000)
+      cy.get('#formPONumber').type('1234125')
+      cy.get(':nth-child(3) > .sc-Rjrgp').clear()
+      
+      cy.get(':nth-child(3) > .sc-Rjrgp').click()
+      cy.wait(2000)
+      cy.get(':nth-child(3) > .sc-Rjrgp').type('HOOPER CORPORATION')
+      cy.wait(2000)
+      cy.get('body > div.fade.sc-gtLWhw.bGmVGK.modal.show > div > div > div.modal-body > form > div > div:nth-child(1) > div:nth-child(3) > div > div.sc-frniUE.brQUEf').click()
   });
-  it('should be able to access In Progress Quotes page', () => {
-      cy.contains('Quotes').should('be.visible');
+   it('should be able to access In Progress Quotes page', () => {
+       cy.contains('Quotes').should('be.visible');
       cy.contains('Quotes').click();
-      cy.wait(2000);
-      cy.contains('In Progress').click();
-  });
-  it('should be able to match quotes count in Manage Buy Quote and In Progress Quotes page', () => {
+       cy.wait(2000);
+       cy.contains('In Progress').click();
+   });
+   it('should be able to match quotes count in Manage Buy Quote and In Progress Quotes page', () => {
       let manageBuyQuotesInProgressCount = 0;
       cy.contains('Quotes').should('be.visible');
       cy.contains('Quotes').click();
@@ -81,8 +100,8 @@ describe('Quotes Module Tests', () => {
         manageBuyQuotesInProgressCount = interception.response.body.meta.total;
         cy.contains(`In Progress Quotes (${interception.response.body.meta.total})`).should('be.visible');
       });
-  });
-  it('should be able to insert buy quotes', () => {
+   });
+   it('should be able to insert buy quotes', () => {
       cy.contains('Quotes').should('be.visible');
       cy.contains('Quotes').click();
       cy.wait(2000);
@@ -103,14 +122,14 @@ describe('Quotes Module Tests', () => {
       cy.get('.flex-row > :nth-child(1) > .form-control').type('-00');
       cy.get('.card-body > :nth-child(1) > :nth-child(7)').should('be.visible');
       cy.wait(5000);
-  });
-  it('should be able to follow customer & unfollow customer', () => {
+   });
+   it('should be able to follow customer & unfollow customer', () => {
       cy.contains('Quotes').should('be.visible');
-      cy.contains('Quotes').click();
+       cy.contains('Quotes').click();
       cy.contains('Follow A Customer').click();
-      cy.get('.sc-etPtWW > ul > :nth-child(4) > .sc-duWCru').click();
-      cy.wait(2000);
-      cy.get('.sc-etPtWW > ul > :nth-child(4) > .sc-duWCru').click();
-  });
+       cy.get('.sc-etPtWW > ul > :nth-child(4) > .sc-duWCru').click();
+       cy.wait(2000);
+       cy.get('.sc-etPtWW > ul > :nth-child(4) > .sc-duWCru').click();
+   });
 });
 

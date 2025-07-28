@@ -7,9 +7,9 @@ describe('Activities Form Page Tests', () => {
     cy.viewport(1800, 900);
     cy.session('admin-login', () => {
       cy.loginToAAD(Cypress.env('admin_user_name'), Cypress.env('admin_password'))
-      cy.visit('https://buyline-app.dev.porterpipe.com/')
+      cy.visit('https://buyline.dev.porterpipe.com/')
     });
-    cy.visit('https://buyline-app.dev.porterpipe.com/');
+    cy.visit('https://buyline.dev.porterpipe.com/');
   });
   it('should log in with ADMIN role', () => {
     cy.contains('Admin').should('be.visible');
